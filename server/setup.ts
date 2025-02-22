@@ -47,29 +47,36 @@ app.post('/v1/runContainer', async (req, res) => {
   if (missingFields.length > 0) {
     return res.status(400).json({
       error: 'Missing required fields',
-      fields: missingFields
+      fields: missingFields,
     });
   }
 
   try {
     const [imageName, containerId] = await Promise.all([
-      createImage(userName, projectName, repoLink, entryPoint, buildCommand, runCommand),
-      runContainer(userName, projectName)
+      createImage(
+        userName,
+        projectName,
+        repoLink,
+        entryPoint,
+        buildCommand,
+        runCommand
+      ),
+      runContainer(userName, projectName),
     ]);
 
     console.log(`Container ${containerId} running with image: ${imageName}`);
-    
+
     await database.dbRedisSet(userName.toLowerCase(), true);
-    res.json({ 
+    res.json({
       containerId,
       imageName,
-      status: 'deployed'
+      status: 'deployed',
     });
   } catch (err) {
     console.error(`Deployment error: ${err.message}`);
     res.status(500).json({
       error: 'Deployment failed',
-      message: err.message
+      message: err.message,
     });
   }
 });
@@ -140,16 +147,25 @@ app.get('/v1/repositories', (req, res) => {
 });
 
 // Add error handling middleware
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
-  res.status(500).send('Something broke!');
-});
+app.use(
+  (
+    err: Error,
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    console.error(err.stack);
+    res.status(500).send('Something broke!');
+  }
+);
 
 // Add request logging middleware
-app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
-  next();
-});
+app.use(
+  (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+    next();
+  }
+);
 
 app.listen(8080, () => {
   console.log('Server is running on port 8080');
