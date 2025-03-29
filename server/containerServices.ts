@@ -25,8 +25,12 @@ export async function runContainer(
     const link = `https://sites.flexhost.tech/${stdout.trim().substring(0, 12)}`;
     setupSubdomain(stdout.trim().substring(0, 12), port , stdout.trim());
     return link;
-  } catch (error) {
-    console.error(`Error running container: ${error.message}`);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error(`Error running container: ${error.message}`);
+    } else {
+      console.error('Error running container: Unknown error');
+    }
     throw error;
   }
 }
@@ -56,8 +60,12 @@ export async function createImage(
     const { stdout } = await execAsync(`buildah build -t ${imageName} .`);
     console.log(`Image built: ${stdout}`);
     return imageName;
-  } catch (error) {
-    console.error(`Error creating image: ${error.message}`);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error(`Error creating image: ${error.message}`);
+    } else {
+      console.error('Error creating image: Unknown error');
+    }
     throw error;
   }
 }
@@ -90,8 +98,12 @@ async function generateDockerFile(
       );
       console.log('Dockerfile created.');
     }
-  } catch (error) {
-    console.error(`Error generating Dockerfile: ${error.message}`);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error(`Error generating Dockerfile: ${error.message}`);
+    } else {
+      console.error('Error generating Dockerfile: Unknown error');
+    }
     throw error;
   }
 }

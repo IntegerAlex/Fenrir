@@ -71,25 +71,39 @@ app.post('/v1/runContainer', async (req, res) => {
       imageName,
       status: 'deployed',
     });
-  } catch (err) {
-    console.error(`Deployment error: ${err.message}`);
-    res.status(500).json({
-      error: 'Deployment failed',
-      message: err.message,
-    });
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      console.error(`Deployment error: ${err.message}`);
+      res.status(500).json({
+        error: 'Deployment failed',
+        message: err.message,
+      });
+    } else {
+      console.error('Deployment error: Unknown error');
+      res.status(500).json({
+        error: 'Deployment failed',
+        message: 'Unknown error occurred',
+      });
+    }
   }
 });
 
 // Add a new login route
-const sessions: { [key: string]: string } = {}; // Store sessions in memory
+const sessions: { [key: string]: { username: string; createdAt: number } } = {}; // Store sessions in memory
+
+function generateSessionId(): string { // Implement the function
+    return Math.random().toString(36).substring(2); // Example implementation
+}
+
+const SESSION_EXPIRY_MS = 30 * 60 * 1000; // Example: 30 minutes
 
 app.post('/login', (req, res) => {
   const { githubUsername, passKey } = req.body;
 
   if (passKey === process.env.PASS_KEY) {
-    const sessionId = generateSessionId(); // Implement a function to generate a unique session ID
-    sessions[sessionId] = githubUsername; // Store the session
-    res.cookie('sessionId', sessionId, { httpOnly: true }); // Set a cookie for the session
+    const sessionId = generateSessionId();
+    sessions[sessionId] = { username: githubUsername, createdAt: Date.now() }; // Store the session with timestamp
+    res.cookie('sessionId', sessionId, { httpOnly: true });
     res.status(200).json({ message: 'Login successful', githubUsername });
   } else {
     res.status(401).json({ message: 'Unauthorized' });
@@ -139,9 +153,22 @@ app.get('/home', (req, res) => {
 });
 
 app.get('/callback', (req, res) => {
-  console.log(req.oidc.user);
+  console.log(req.oidc?.user); // Optional chaining
   res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
+
+// Extend Request interface to include oidc
+declare global {
+  namespace Express {
+    interface Request {
+      oidc?: {
+        user: {
+          nickname: string;
+        };
+      };
+    }
+  }
+}
 
 app.get(
   '/v1/profile',
@@ -152,13 +179,13 @@ app.get(
   }
 );
 
-app.get('/v1/repositories', (req, res) => {
+app.get('/v1/repositories', (req: express.Request, res: express.Response) => {
   const user_id = req.query.user_id as string;
 
   fetch(`https://api.github.com/users/${user_id}/repos`, { method: 'GET' })
     .then((response) => response.json())
-    .then((data) => {
-      const repositories = data.map((repo: any) => {
+    .then((data: any) => { // Define the expected structure of data
+      const repositories = data.map((repo: { name: string; html_url: string; }) => {
         return {
           name: repo.name,
           url: repo.html_url,
@@ -166,7 +193,7 @@ app.get('/v1/repositories', (req, res) => {
       });
       res.send({
         repositories: repositories,
-        avatar_url: data[0].owner.avatar_url,
+        avatar_url: data[0]?.owner?.avatar_url, // Optional chaining
       });
     })
     .catch((error) => {
