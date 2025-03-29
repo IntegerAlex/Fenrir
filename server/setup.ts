@@ -143,10 +143,14 @@ app.get('/callback', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
-app.get('/v1/profile', isAuthenticated, (req: express.Request, res: express.Response) => {
-  console.log('User accessed /profile');
-  res.json({ nickname: (req as any).user.username });
-});
+app.get(
+  '/v1/profile',
+  isAuthenticated,
+  (req: express.Request, res: express.Response) => {
+    console.log('User accessed /profile');
+    res.json({ nickname: (req as any).user.username });
+  }
+);
 
 app.get('/v1/repositories', (req, res) => {
   const user_id = req.query.user_id as string;
