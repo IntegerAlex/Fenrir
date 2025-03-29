@@ -161,7 +161,6 @@ app.get('/protected-route', isAuthenticated, (req, res) => {
   res.json({ message: 'This is a protected route' });
 });
 
-
 // /home route serving home.html
 app.get('/home', (req, res) => {
   console.log('User accessed /home');
