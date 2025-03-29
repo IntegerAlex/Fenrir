@@ -91,8 +91,9 @@ app.post('/v1/runContainer', async (req, res) => {
 // Add a new login route
 const sessions: { [key: string]: { username: string; createdAt: number } } = {}; // Store sessions in memory
 
-function generateSessionId(): string { // Implement the function
-    return Math.random().toString(36).substring(2); // Example implementation
+function generateSessionId(): string {
+  // Implement the function
+  return Math.random().toString(36).substring(2); // Example implementation
 }
 
 const SESSION_EXPIRY_MS = 30 * 60 * 1000; // Example: 30 minutes
@@ -184,13 +185,16 @@ app.get('/v1/repositories', (req: express.Request, res: express.Response) => {
 
   fetch(`https://api.github.com/users/${user_id}/repos`, { method: 'GET' })
     .then((response) => response.json())
-    .then((data: any) => { // Define the expected structure of data
-      const repositories = data.map((repo: { name: string; html_url: string; }) => {
-        return {
-          name: repo.name,
-          url: repo.html_url,
-        };
-      });
+    .then((data: any) => {
+      // Define the expected structure of data
+      const repositories = data.map(
+        (repo: { name: string; html_url: string }) => {
+          return {
+            name: repo.name,
+            url: repo.html_url,
+          };
+        }
+      );
       res.send({
         repositories: repositories,
         avatar_url: data[0]?.owner?.avatar_url, // Optional chaining
