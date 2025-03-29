@@ -97,12 +97,23 @@ app.post('/login', (req, res) => {
 });
 
 // Middleware to check authentication
-const isAuthenticated = (req, res, next) => {
-  const sessionId = req.cookies.sessionId;
-  if (sessions[sessionId]) {
-    next(); // User is authenticated
+const isAuthenticated = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const sessionId = req.cookies?.sessionId;
+  if (!sessionId || !sessions[sessionId]) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+  
+  const session = sessions[sessionId];
+  const sessionAge = Date.now() - session.createdAt;
+  
+  // Check if session has expired
+  if (sessionAge > SESSION_EXPIRY_MS) {
+    delete sessions[sessionId];
+    return res.status(401).json({ message: 'Session expired. Please log in again.' });
   } else {
-    res.status(401).json({ message: 'Unauthorized' });
+    // Add user data to request for use in route handlers
+    (req as any).user = { username: session.username };
+    next(); // User is authenticated
   }
 };
 
