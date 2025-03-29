@@ -1,10 +1,11 @@
 import net from 'net';
 import fs from 'fs';
+
 export const dockerFile = (
   entryPoint: string,
   buildCommand: string,
   runCommand: string
-) => `
+): string => `
 FROM node:22-alpine
 WORKDIR /app
 COPY . .
@@ -13,7 +14,7 @@ EXPOSE 8080
 CMD ["${runCommand}", "${entryPoint}"]
 `;
 
-function isPortInUse(port: number, host = '127.0.0.1') {
+function isPortInUse(port: number, host = '127.0.0.1'): Promise<boolean> {
   return new Promise((resolve) => {
     const server = net.createServer();
 
@@ -34,7 +35,8 @@ function isPortInUse(port: number, host = '127.0.0.1') {
     server.listen(port, host);
   });
 }
-export async function getPort(findPort: number) {
+
+export async function getPort(findPort: number): Promise<number> {
   // Check if the starting port is in use
   const inUse = await isPortInUse(findPort);
   if (inUse) {
@@ -45,7 +47,8 @@ export async function getPort(findPort: number) {
     return findPort;
   }
 }
-export function createDirectory(userName: string) {
+
+export function createDirectory(userName: string): boolean {
   if (!fs.existsSync(`/home/akshat/${userName.toLowerCase()}`)) {
     fs.mkdirSync(`/home/akshat/${userName.toLowerCase()}`);
   }

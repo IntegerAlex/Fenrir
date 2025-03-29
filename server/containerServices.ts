@@ -2,7 +2,7 @@ import { exec, execSync } from 'child_process';
 import { promisify } from 'util';
 import { createWriteStream, writeFileSync } from 'fs';
 import { getPort, dockerFile } from './utils/containerUtil';
-import { setupSubdomain } from '../server/utils/serverUtils';
+import { setupSubdomain } from './utils/serverUtils';
 import { postDeployment } from '../db/operations';
 const execAsync = promisify(exec);
 
@@ -11,7 +11,7 @@ export async function runContainer(
   projectName: string
 ): Promise<string> {
   if (!username || !projectName) {
-    return 'Invalid input';
+    throw new Error('Invalid input');
   }
 
   try {

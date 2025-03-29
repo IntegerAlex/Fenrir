@@ -1,4 +1,25 @@
-export const config = {
+interface Config {
+  server: {
+    port: number | string;
+    baseUrl: string;
+  };
+  cloudflare: {
+    zoneId?: string;
+    email?: string;
+    token?: string;
+  };
+  certbot: {
+    email?: string;
+  };
+  redis: {
+    url: string;
+  };
+  postgres: {
+    url: string;
+  };
+}
+
+export const config: Config = {
   server: {
     port: process.env.PORT || 8080,
     baseUrl: process.env.BASEURL || 'http://localhost:8080',
