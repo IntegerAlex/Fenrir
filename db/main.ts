@@ -1,6 +1,6 @@
 import pg from 'pg';
 import { createClient } from 'redis';
-import { createTableDeployments } from './create';
+import { createDatabase, createTableDeployments } from './create';
 require('dotenv').config();
 
 class db {

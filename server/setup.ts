@@ -1,4 +1,5 @@
 import express from 'express';
+import cookieParser from 'cookie-parser'; // Added cookie-parser import
 import { runContainer, createImage } from './containerServices';
 import htmxRouter from './routes/htmx';
 import path from 'path';
@@ -7,19 +8,26 @@ import cors from 'cors';
 require('dotenv').config();
 import { createDirectory } from './utils/containerUtil';
 import database from '../db/main';
+
 const app = express();
+
+// Add cookie-parser middleware before any routes that use cookies
+app.use(cookieParser());
 app.set('trust proxy', true);
 app.use(cors());
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
 app.use('/htmx', htmxRouter);
 app.use(express.static(path.join(__dirname, '../../frontend/')));
 
+// Health Check
 app.get('/v1/health', (req, res) => {
   res.status(200).send('Healthy');
 });
 
+// Endpoint to run container
 app.post('/v1/runContainer', async (req, res) => {
   const {
     userName,
@@ -88,23 +96,25 @@ app.post('/v1/runContainer', async (req, res) => {
   }
 });
 
-// Add a new login route
-const sessions: { [key: string]: { username: string; createdAt: number } } = {}; // Store sessions in memory
+// In-memory session storage
+const sessions: { [key: string]: { username: string; createdAt: number } } = {};
 
+// Simple session ID generator
 function generateSessionId(): string {
-  // Implement the function
-  return Math.random().toString(36).substring(2); // Example implementation
+  return Math.random().toString(36).substring(2);
 }
 
-const SESSION_EXPIRY_MS = 30 * 60 * 1000; // Example: 30 minutes
+const SESSION_EXPIRY_MS = 30 * 60 * 1000; // 30 minutes expiry
 
+// Login route that sets a cookie with the session ID
 app.post('/login', (req, res) => {
   const { githubUsername, passKey } = req.body;
 
   if (passKey === process.env.PASS_KEY) {
     const sessionId = generateSessionId();
-    sessions[sessionId] = { username: githubUsername, createdAt: Date.now() }; // Store the session with timestamp
-    res.cookie('sessionId', sessionId, { httpOnly: true });
+    sessions[sessionId] = { username: githubUsername, createdAt: Date.now() };
+    res.cookie('sessionId', sessionId, { httpOnly: true, secure: false });
+    console.log('Session ID set:', sessionId);
     res.status(200).json({ message: 'Login successful', githubUsername });
   } else {
     res.status(401).json({ message: 'Unauthorized' });
@@ -118,47 +128,59 @@ const isAuthenticated = (
   next: express.NextFunction
 ) => {
   const sessionId = req.cookies?.sessionId;
-  if (!sessionId || !sessions[sessionId]) {
+  console.log('Session ID:', sessionId);
+
+  if (!sessionId) {
+    console.log('No session ID found');
     return res.status(401).json({ message: 'Unauthorized' });
   }
 
   const session = sessions[sessionId];
+  if (!session) {
+    console.log('Session not found for ID:', sessionId);
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
   const sessionAge = Date.now() - session.createdAt;
 
-  // Check if session has expired
   if (sessionAge > SESSION_EXPIRY_MS) {
+    console.log('Session expired:', sessionId);
     delete sessions[sessionId];
     return res
       .status(401)
       .json({ message: 'Session expired. Please log in again.' });
   } else {
-    // Add user data to request for use in route handlers
     (req as any).user = { username: session.username };
-    next(); // User is authenticated
+    console.log('User authenticated:', session.username);
+    next();
   }
 };
 
-// Protect routes with the authentication middleware
+// Protected route example
 app.get('/protected-route', isAuthenticated, (req, res) => {
   res.json({ message: 'This is a protected route' });
 });
-// Update the root route
+
+// Root route updated to send home.html
 app.get('/', (req, res) => {
-  console.log('Accessing root route');
-  res.sendFile(path.join(__dirname, '../../frontend/home.html'));
+  const filePath = path.join(__dirname, '../../frontend/home.html');
+  console.log('File path:', filePath);
+  res.sendFile(filePath);
 });
 
+// /home route serving home.html
 app.get('/home', (req, res) => {
   console.log('User accessed /home');
   res.sendFile(path.join(__dirname, '../../frontend/home.html'));
 });
 
+// Callback route
 app.get('/callback', (req, res) => {
-  console.log(req.oidc?.user); // Optional chaining
-  res.sendFile(path.join(__dirname, '../frontend/index.html'));
+  console.log(req.oidc?.user);
+  res.sendFile(path.join(__dirname, '../../frontend/index.html'));
 });
 
-// Extend Request interface to include oidc
+// Extend Request interface for oidc (if used)
 declare global {
   namespace Express {
     interface Request {
@@ -171,6 +193,7 @@ declare global {
   }
 }
 
+// Profile route with authentication
 app.get(
   '/v1/profile',
   isAuthenticated,
@@ -180,24 +203,22 @@ app.get(
   }
 );
 
+// Route to fetch GitHub repositories
 app.get('/v1/repositories', (req: express.Request, res: express.Response) => {
   const user_id = req.query.user_id as string;
 
   fetch(`https://api.github.com/users/${user_id}/repos`, { method: 'GET' })
     .then((response) => response.json())
     .then((data: any) => {
-      // Define the expected structure of data
       const repositories = data.map(
-        (repo: { name: string; html_url: string }) => {
-          return {
-            name: repo.name,
-            url: repo.html_url,
-          };
-        }
+        (repo: { name: string; html_url: string }) => ({
+          name: repo.name,
+          url: repo.html_url,
+        })
       );
       res.send({
         repositories: repositories,
-        avatar_url: data[0]?.owner?.avatar_url, // Optional chaining
+        avatar_url: data[0]?.owner?.avatar_url,
       });
     })
     .catch((error) => {
@@ -206,7 +227,7 @@ app.get('/v1/repositories', (req: express.Request, res: express.Response) => {
     });
 });
 
-// Add error handling middleware
+// Error handling middleware
 app.use(
   (
     err: Error,
@@ -219,13 +240,20 @@ app.use(
   }
 );
 
-// Add request logging middleware
+// Request logging middleware
 app.use(
   (req: express.Request, res: express.Response, next: express.NextFunction) => {
     console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
     next();
   }
 );
+
+// Route to serve the login page
+app.get('/login', (req, res) => {
+  const filePath = path.join(__dirname, '../../frontend/login.html');
+  console.log('Login file path:', filePath);
+  res.sendFile(filePath);
+});
 
 app.listen(8080, () => {
   console.log('Server is running on port 8080');

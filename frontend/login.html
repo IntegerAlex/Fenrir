@@ -58,7 +58,8 @@
                 });
                 
                 if (response.ok) {
-                    window.location.href = '/'; // Redirect to the dashboard
+                    // Redirect to dashboard.html on successful login
+                    window.location.href = 'dashboard.html'; // Redirect to dashboard
                 } else {
                     const data = await response.json();
                     errorMessage.textContent = data.message || 'Invalid credentials';

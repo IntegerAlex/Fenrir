@@ -1,5 +1,17 @@
 import database from './main';
 
+export async function createDatabase() {
+  const dbName = process.env.PG_DATABASE;
+  const query = `CREATE DATABASE ${dbName};`;
+
+  try {
+    await database.dbQuery(query);
+    console.log(`Database '${dbName}' created successfully.`);
+  } catch (error) {
+    console.error('Error creating database:', error);
+  }
+}
+
 export async function createTableDeployments() {
   try {
     await database.dbQuery(`
