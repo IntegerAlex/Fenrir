@@ -143,9 +143,9 @@ app.get('/callback', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
-app.get('/v1/profile', (req, res) => {
+app.get('/v1/profile', isAuthenticated, (req: express.Request, res: express.Response) => {
   console.log('User accessed /profile');
-  res.json({ nickname: req.oidc.user.nickname });
+  res.json({ nickname: (req as any).user.username });
 });
 
 app.get('/v1/repositories', (req, res) => {
