@@ -18,7 +18,7 @@ function isPortInUse(port: number, host = '127.0.0.1') {
     const server = net.createServer();
 
     server.once('error', (err) => {
-      if (err.code === 'EADDRINUSE') {
+      if (err.name === 'EADDRINUSE') {
         resolve(true); // Port is in use
       } else {
         resolve(false); // Other errors

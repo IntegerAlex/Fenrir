@@ -75,7 +75,7 @@ router.get('/deployments', async (req, res) => {
     }
 
     const deploymentsHTML = deployments
-      .map((deployment) => {
+      .map((deployment: { id: string; name: string }) => {
         return `
                 <div class="deployment-item">
                     <h3>${deployment.project_name}</h3>
