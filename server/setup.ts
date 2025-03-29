@@ -46,29 +46,36 @@ app.post('/v1/runContainer', async (req, res) => {
   if (missingFields.length > 0) {
     return res.status(400).json({
       error: 'Missing required fields',
-      fields: missingFields
+      fields: missingFields,
     });
   }
 
   try {
     const [imageName, containerId] = await Promise.all([
-      createImage(userName, projectName, repoLink, entryPoint, buildCommand, runCommand),
-      runContainer(userName, projectName)
+      createImage(
+        userName,
+        projectName,
+        repoLink,
+        entryPoint,
+        buildCommand,
+        runCommand
+      ),
+      runContainer(userName, projectName),
     ]);
 
     console.log(`Container ${containerId} running with image: ${imageName}`);
-    
+
     await database.dbRedisSet(userName.toLowerCase(), true);
-    res.json({ 
+    res.json({
       containerId,
       imageName,
-      status: 'deployed'
+      status: 'deployed',
     });
   } catch (err) {
     console.error(`Deployment error: ${err.message}`);
     res.status(500).json({
       error: 'Deployment failed',
-      message: err.message
+      message: err.message,
     });
   }
 });
@@ -77,31 +84,31 @@ app.post('/v1/runContainer', async (req, res) => {
 const sessions: { [key: string]: string } = {}; // Store sessions in memory
 
 app.post('/login', (req, res) => {
-    const { githubUsername, passKey } = req.body;
+  const { githubUsername, passKey } = req.body;
 
-    if (passKey === process.env.PASS_KEY) {
-        const sessionId = generateSessionId(); // Implement a function to generate a unique session ID
-        sessions[sessionId] = githubUsername; // Store the session
-        res.cookie('sessionId', sessionId, { httpOnly: true }); // Set a cookie for the session
-        res.status(200).json({ message: 'Login successful', githubUsername });
-    } else {
-        res.status(401).json({ message: 'Unauthorized' });
-    }
+  if (passKey === process.env.PASS_KEY) {
+    const sessionId = generateSessionId(); // Implement a function to generate a unique session ID
+    sessions[sessionId] = githubUsername; // Store the session
+    res.cookie('sessionId', sessionId, { httpOnly: true }); // Set a cookie for the session
+    res.status(200).json({ message: 'Login successful', githubUsername });
+  } else {
+    res.status(401).json({ message: 'Unauthorized' });
+  }
 });
 
 // Middleware to check authentication
 const isAuthenticated = (req, res, next) => {
-    const sessionId = req.cookies.sessionId;
-    if (sessions[sessionId]) {
-        next(); // User is authenticated
-    } else {
-        res.status(401).json({ message: 'Unauthorized' });
-    }
+  const sessionId = req.cookies.sessionId;
+  if (sessions[sessionId]) {
+    next(); // User is authenticated
+  } else {
+    res.status(401).json({ message: 'Unauthorized' });
+  }
 };
 
 // Protect routes with the authentication middleware
 app.get('/protected-route', isAuthenticated, (req, res) => {
-    res.json({ message: 'This is a protected route' });
+  res.json({ message: 'This is a protected route' });
 });
 // Update the root route
 app.get('/', (req, res) => {
@@ -148,16 +155,25 @@ app.get('/v1/repositories', (req, res) => {
 });
 
 // Add error handling middleware
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
-  res.status(500).send('Something broke!');
-});
+app.use(
+  (
+    err: Error,
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    console.error(err.stack);
+    res.status(500).send('Something broke!');
+  }
+);
 
 // Add request logging middleware
-app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
-  next();
-});
+app.use(
+  (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+    next();
+  }
+);
 
 app.listen(8080, () => {
   console.log('Server is running on port 8080');
