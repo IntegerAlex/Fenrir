@@ -161,12 +161,6 @@ app.get('/protected-route', isAuthenticated, (req, res) => {
   res.json({ message: 'This is a protected route' });
 });
 
-// Root route updated to send home.html
-app.get('/', (req, res) => {
-  const filePath = path.join(__dirname, '../../frontend/home.html');
-  console.log('File path:', filePath);
-  res.sendFile(filePath);
-});
 
 // /home route serving home.html
 app.get('/home', (req, res) => {
@@ -249,7 +243,7 @@ app.use(
 );
 
 // Route to serve the login page
-app.get('/login', (req, res) => {
+app.get('/', (req, res) => {
   const filePath = path.join(__dirname, '../../frontend/login.html');
   console.log('Login file path:', filePath);
   res.sendFile(filePath);
