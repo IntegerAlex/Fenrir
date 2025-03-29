@@ -12,7 +12,7 @@ export const config = {
     email: process.env.CERTBOT_EMAIL,
   },
   redis: {
-    url: 'redis://localhost:6379',
+    url: process.env.REDIS_URL || 'redis://localhost:6379',
   },
   postgres: {
     url: process.env.DATABASE_URL || 'postgresql://localhost:5432/flexhost',
