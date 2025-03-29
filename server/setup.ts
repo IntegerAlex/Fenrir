@@ -4,7 +4,6 @@ import htmxRouter from './routes/htmx';
 import path from 'path';
 import bodyParser from 'body-parser';
 import cors from 'cors';
-import { auth, requiresAuth } from 'express-openid-connect';
 require('dotenv').config();
 import { createDirectory } from './utils/containerUtil';
 import database from '../db/main';
@@ -74,31 +73,40 @@ app.post('/v1/runContainer', async (req, res) => {
   }
 });
 
-// Authentication configuration
-const config = {
-  authRequired: false,
-  auth0Logout: true,
-  secret: process.env.SECRET,
-  baseURL: process.env.BASEURL,
-  clientID: process.env.CLIENTID,
-  issuerBaseURL: process.env.ISSUERBASEURL,
-  authorizationParams: {
-    scope: 'openid profile',
-  },
+// Add a new login route
+const sessions: { [key: string]: string } = {}; // Store sessions in memory
+
+app.post('/login', (req, res) => {
+    const { githubUsername, passKey } = req.body;
+
+    if (passKey === process.env.PASS_KEY) {
+        const sessionId = generateSessionId(); // Implement a function to generate a unique session ID
+        sessions[sessionId] = githubUsername; // Store the session
+        res.cookie('sessionId', sessionId, { httpOnly: true }); // Set a cookie for the session
+        res.status(200).json({ message: 'Login successful', githubUsername });
+    } else {
+        res.status(401).json({ message: 'Unauthorized' });
+    }
+});
+
+// Middleware to check authentication
+const isAuthenticated = (req, res, next) => {
+    const sessionId = req.cookies.sessionId;
+    if (sessions[sessionId]) {
+        next(); // User is authenticated
+    } else {
+        res.status(401).json({ message: 'Unauthorized' });
+    }
 };
 
-app.use(auth(config));
-
-// Root route protected by authentication
+// Protect routes with the authentication middleware
+app.get('/protected-route', isAuthenticated, (req, res) => {
+    res.json({ message: 'This is a protected route' });
+});
+// Update the root route
 app.get('/', (req, res) => {
   console.log('Accessing root route');
-  if (req.oidc.isAuthenticated()) {
-    createDirectory(req.oidc.user.nickname);
-    res.sendFile(path.join(__dirname, '../../frontend/dashboard.html'));
-  } else {
-    console.log('User is not authenticated, redirecting to /home');
-    res.redirect('/home');
-  }
+  res.sendFile(path.join(__dirname, '../../frontend/home.html'));
 });
 
 app.get('/home', (req, res) => {
@@ -111,7 +119,7 @@ app.get('/callback', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
-app.get('/v1/profile', requiresAuth(), (req, res) => {
+app.get('/v1/profile', (req, res) => {
   console.log('User accessed /profile');
   res.json({ nickname: req.oidc.user.nickname });
 });
