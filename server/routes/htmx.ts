@@ -34,7 +34,13 @@ interface ErrorResponse {
 }
 
 router.post('/', async (req: Request, res: Response) => {
-  const { userName, buildCommand, runCommand, repoLink, entryPoint }: RunContainerRequestBody = req.body;
+  const {
+    userName,
+    buildCommand,
+    runCommand,
+    repoLink,
+    entryPoint,
+  }: RunContainerRequestBody = req.body;
   const projectName = repoLink.split('/').pop()?.split('.')[0] || '';
 
   try {
@@ -64,10 +70,13 @@ router.post('/', async (req: Request, res: Response) => {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({})); // Handle potential JSON parsing errors
       console.error('Error response:', errorData);
-      return res.status(response.status).json({ message: (errorData as ErrorResponse).message || 'Error occurred' });
+      return res.status(response.status).json({
+        message: (errorData as ErrorResponse).message || 'Error occurred',
+      });
     }
 
-    const runContainerData: RunContainerResponse = await response.json() as RunContainerResponse; // Assert the type of runContainerData
+    const runContainerData: RunContainerResponse =
+      (await response.json()) as RunContainerResponse; // Assert the type of runContainerData
     const containerId = runContainerData.containerId; // Now TypeScript knows this is safe
     res.send(`<p>Container ID: ${containerId}</p>`);
   } catch (error) {
@@ -90,7 +99,9 @@ router.get('/deployments', async (req: Request, res: Response) => {
     //
     //	const userName = data.nickname;
 
-    const deployments: Deployment[] = await getDeployments(userName.toLowerCase());
+    const deployments: Deployment[] = await getDeployments(
+      userName.toLowerCase()
+    );
     if (!deployments || deployments.length === 0) {
       return res.send('<p>No deployments found</p>');
     }
