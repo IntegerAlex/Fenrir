@@ -5,7 +5,8 @@ import { getPort, dockerFile } from './utils/containerUtil';
 import { setupSubdomain } from './utils/serverUtils';
 import { postDeployment } from '../db/operations';
 const execAsync = promisify(exec);
-
+const HOST = process.env.HOST || 'http://localhost:8080';
+const linuxUser = process.env.LINUX_USER || 'root';
 export async function runContainer(
   username: string,
   projectName: string
@@ -22,7 +23,7 @@ export async function runContainer(
     );
     createWriteStream('containerId.txt').write(stdout);
     await postDeployment(projectName, username.toLowerCase(), stdout.trim());
-    const link = `https://sites.flexhost.tech/${stdout.trim().substring(0, 12)}`;
+    const link = `${HOST}/${stdout.trim().substring(0, 12)}`;
     setupSubdomain(stdout.trim().substring(0, 12), port, stdout.trim());
     return link;
   } catch (error: unknown) {
@@ -80,7 +81,7 @@ async function generateDockerFile(
 ): Promise<void> {
   try {
     // Change directory to username folder
-    process.chdir(`/home/akshat/${username.toLowerCase()}`);
+    process.chdir(`/home/${linuxUser}/${username.toLowerCase()}`);
 
     // Clone the repository into the project directory
     await execAsync(`git clone ${repoLink}`);
