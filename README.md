@@ -1,7 +1,7 @@
 # Flexr
 
 <p align="center">
-  <img src="./logo.webp" width="200" alt="mascot">
+  <img src="./logo.png" width="200" alt="mascot">
 </p>
 
 ---
