@@ -60,22 +60,22 @@ app.post('/v1/runContainer', async (req, res) => {
   }
 
   try {
-	  const imageName = await createImage(
-    userName,
-    projectName,
-    repoLink,
-    entryPoint,
-    buildCommand,
-    runCommand
-  );
-  const containerId = await runContainer(userName, projectName);
+    const imageName = await createImage(
+      userName,
+      projectName,
+      repoLink,
+      entryPoint,
+      buildCommand,
+      runCommand
+    );
+    const containerId = await runContainer(userName, projectName);
 
     await database.dbRedisSet(userName.toLowerCase(), true);
     res.json({
       containerId,
       imageName,
       status: 'deployed',
-    })
+    });
   } catch (err: unknown) {
     if (err instanceof Error) {
       console.error(`Deployment error: ${err.message}`);
@@ -108,14 +108,13 @@ app.post('/login', (req, res) => {
   const { githubUsername, passKey } = req.body;
 
   if (passKey === process.env.PASS_KEY) {
-	exec(`mkdir ${githubUsername}`, (err, stdout, stderr) => {
-		if (err) {
-			console.error(err);
-		}
-		console.log(stdout);
-		console.error(stderr);
-	}
-	    );
+    exec(`mkdir ${githubUsername}`, (err, stdout, stderr) => {
+      if (err) {
+        console.error(err);
+      }
+      console.log(stdout);
+      console.error(stderr);
+    });
     const sessionId = generateSessionId();
     sessions[sessionId] = { username: githubUsername, createdAt: Date.now() };
     res.cookie('sessionId', sessionId, { httpOnly: true, secure: false });
