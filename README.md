@@ -1,5 +1,11 @@
 # Flexr
 
+<p align="center">
+  <img src="./logo.webp" width="200" alt="mascot">
+</p>
+
+---
+
 > A self-hosted platform that automates containerization and deployment of Node.js applications with automatic SSL, DNS management, and container orchestration.
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
