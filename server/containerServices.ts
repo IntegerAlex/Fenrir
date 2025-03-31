@@ -24,7 +24,7 @@ export async function runContainer(
     createWriteStream('containerId.txt').write(stdout);
     await postDeployment(projectName, username.toLowerCase(), stdout.trim());
     const link = `${HOST}/${stdout.trim().substring(0, 12)}`;
-    setupSubdomain(stdout.trim().substring(0, 12), port, stdout.trim());
+    await setupSubdomain(stdout.trim().substring(0, 12), port, stdout.trim());
     return link;
   } catch (error: unknown) {
     if (error instanceof Error) {

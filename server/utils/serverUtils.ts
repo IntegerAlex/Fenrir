@@ -3,7 +3,7 @@ import { exec } from 'child_process';
 import fetch from 'node-fetch';
 
 // Function to add DNS record
-function addRecord(subdomain: string, dnsRecordId: string): Promise<string> {
+async function addRecord(subdomain: string, dnsRecordId: string): Promise<string> {
     const zoneId = process.env.CLOUDFLARE_ZONE_ID;
     const url = `https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records`;
     const data = {
@@ -122,7 +122,7 @@ function restartNginx(): Promise<string> {
 }
 
 // Combine functions to setup DNS, SSL, and NGINX server block
-export function setupSubdomain(subdomain: string, port: number, dnsRecordID: string): Promise<string> {
+export async function setupSubdomain(subdomain: string, port: number, dnsRecordID: string): Promise<string> {
     return addRecord(subdomain, dnsRecordID)
         .then(dnsRecordUpdate => {
             console.log(dnsRecordUpdate);
