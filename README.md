@@ -1,6 +1,12 @@
 # Flexr
 
-> A self-hosted platform that automates containerization and deployment of Node.js applications with automatic SSL, DNS management, and container orchestration.
+<p align="center">
+  <img src="./logo.png" width="200" alt="mascot">
+</p>
+
+---
+
+> Flexr is a self-hosted platform that automates the containerization and deployment of Node.js applications. It provides automatic SSL, DNS management, and container orchestration.
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
@@ -8,27 +14,30 @@
 
 ## Overview
 
-Flexr simplifies application deployment by automating container builds, SSL certification, DNS configuration, and deployment monitoring. It integrates with GitHub for seamless deployment workflows and provides real-time deployment status updates.
+Fenrir simplifies the deployment of Node.js applications by automating the processes involved in building containers, generating SSL certificates, configuring DNS, and monitoring deployments. It integrates with GitHub to streamline deployment workflows and provides real-time updates on deployment status.
 
 ## Features
 
 - **Automated Deployment Pipeline**
-  - Container build automation with Podman
-  - Automatic SSL certificate generation via Certbot
-  - Dynamic DNS configuration through Cloudflare
-  - NGINX reverse proxy setup
+  - Builds containers using Podman
+  - Generates SSL certificates automatically with Certbot
+  - Configures DNS dynamically through Cloudflare
+  - Sets up an NGINX reverse proxy
 
 - **Monitoring & Management**
-  - Real-time deployment status
-  - Container health monitoring
-  - Resource usage tracking
-  - Deployment history
+  - Provides real-time deployment status
+  - Monitors container health
+  - Tracks resource usage
+  - Maintains deployment history
 
 - **Security**
-  - Auth0 integration for authentication
-  - Automatic SSL/TLS certification
-  - Secure proxy configuration
-  - Container isolation
+  - Automatically manages SSL/TLS certificates
+  - Configures secure proxy settings
+  - Ensures container isolation
+
+## Why I Created Flexr
+
+I created Flexr to simplify the deployment process for Node.js applications, making it easier for developers to manage their applications without getting bogged down by the complexities of containerization and deployment. My goal is to provide a tool that enhances productivity and streamlines workflows.
 
 ## Prerequisites
 
@@ -37,17 +46,14 @@ Flexr simplifies application deployment by automating container builds, SSL cert
 - PostgreSQL
 - Redis
 - NGINX
-- Auth0 Account
 - Cloudflare Account
 
 ## Environment Variables
 
 ```bash
-# Auth0 Configuration
-SECRET=your_auth0_secret
-BASEURL=your_base_url
-CLIENTID=your_auth0_client_id
-ISSUERBASEURL=your_auth0_issuer_url
+# System Configuration
+LINUX_USR=your_linux_user
+HOST=your_domain
 
 # Cloudflare Configuration
 CLOUDFLARE_ZONE_ID=your_zone_id
@@ -57,29 +63,6 @@ CLOUDFLARE_GLOBAL_TOKEN=your_api_token
 # Certbot Configuration
 CERTBOT_EMAIL=your_email
 ```
-
-## Quick Start
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/IntegerAlex/flexr.git
-   cd flexr
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Build TypeScript:
-   ```bash
-   npm run build
-   ```
-
-4. Start development server:
-   ```bash
-   npm run dev
-   ```
 
 ## API Reference
 
@@ -114,6 +97,14 @@ POST /v1/runContainer
 - **DNS**: Cloudflare API
 - **SSL**: Certbot
 
+## Currently Building For
+
+Fenrir is currently built for RHEL-based distributions. While it can work on any Linux distribution as the necessary utilities are available, it has not been extensively tested on other systems.
+
+## Demo
+
+[![Demo Video](https://img.youtube.com/vi/your_video_id/0.jpg)](https://www.youtube.com/watch?v=your_video_id)
+
 ## Contributing
 
 1. Fork the repository
@@ -124,10 +115,8 @@ POST /v1/runContainer
 
 ## License
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3 of the License.
 
 ---
-Made with ❤️ by Akshat Kotpalliwar (alias IntegerAlex on GitHub) 
+Made with ❤️ by Akshat Kotpalliwar (alias IntegerAlex on GitHub)
+```

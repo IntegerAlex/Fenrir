@@ -2,16 +2,17 @@ import { exec, execSync } from 'child_process';
 import { promisify } from 'util';
 import { createWriteStream, writeFileSync } from 'fs';
 import { getPort, dockerFile } from './utils/containerUtil';
-import { setupSubdomain } from '../server/utils/serverUtils';
+import { setupSubdomain } from './utils/serverUtils';
 import { postDeployment } from '../db/operations';
 const execAsync = promisify(exec);
-
+const HOST = process.env.HOST || 'http://localhost:8080';
+const linuxUser = process.env.LINUX_USER || 'root';
 export async function runContainer(
   username: string,
   projectName: string
 ): Promise<string> {
   if (!username || !projectName) {
-    return 'Invalid input';
+    throw new Error('Invalid input');
   }
 
   try {
@@ -22,11 +23,15 @@ export async function runContainer(
     );
     createWriteStream('containerId.txt').write(stdout);
     await postDeployment(projectName, username.toLowerCase(), stdout.trim());
-    const link = `https://sites.flexhost.tech/${stdout.trim().substring(0, 12)}`;
-    setupSubdomain(stdout.trim().substring(0, 12), port , stdout.trim());
+    const link = `${HOST}/${stdout.trim().substring(0, 12)}`;
+    await setupSubdomain(stdout.trim().substring(0, 12), port, stdout.trim());
     return link;
-  } catch (error) {
-    console.error(`Error running container: ${error.message}`);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error(`Error running container: ${error.message}`);
+    } else {
+      console.error('Error running container: Unknown error');
+    }
     throw error;
   }
 }
@@ -56,8 +61,12 @@ export async function createImage(
     const { stdout } = await execAsync(`buildah build -t ${imageName} .`);
     console.log(`Image built: ${stdout}`);
     return imageName;
-  } catch (error) {
-    console.error(`Error creating image: ${error.message}`);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error(`Error creating image: ${error.message}`);
+    } else {
+      console.error('Error creating image: Unknown error');
+    }
     throw error;
   }
 }
@@ -72,7 +81,7 @@ async function generateDockerFile(
 ): Promise<void> {
   try {
     // Change directory to username folder
-    process.chdir(`/home/akshat/${username.toLowerCase()}`);
+    process.chdir(`/home/${linuxUser}/${username.toLowerCase()}`);
 
     // Clone the repository into the project directory
     await execAsync(`git clone ${repoLink}`);
@@ -90,8 +99,12 @@ async function generateDockerFile(
       );
       console.log('Dockerfile created.');
     }
-  } catch (error) {
-    console.error(`Error generating Dockerfile: ${error.message}`);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error(`Error generating Dockerfile: ${error.message}`);
+    } else {
+      console.error('Error generating Dockerfile: Unknown error');
+    }
     throw error;
   }
 }
