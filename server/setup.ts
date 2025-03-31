@@ -108,13 +108,7 @@ app.post('/login', (req, res) => {
   const { githubUsername, passKey } = req.body;
 
   if (passKey === process.env.PASS_KEY) {
-    exec(`mkdir ${githubUsername}`, (err, stdout, stderr) => {
-      if (err) {
-        console.error(err);
-      }
-      console.log(stdout);
-      console.error(stderr);
-    });
+    createDirectory(githubUsername);
     const sessionId = generateSessionId();
     sessions[sessionId] = { username: githubUsername, createdAt: Date.now() };
     res.cookie('sessionId', sessionId, { httpOnly: true, secure: false });

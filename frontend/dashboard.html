@@ -26,8 +26,6 @@
                         <button type="submit" class="btn secondary-btn">Logout</button>
                     </form>
                 </div>
-		<div class="subscription" id="subscription">
-		</div>
             </div>
         </header>
         <main class="dashboard-main">
@@ -107,10 +105,6 @@
                 values: { userName: document.getElementById('userName').value }
             });
 
-		   htmx.ajax('GET', '/htmx/subscription', {
-		target: '#subscription',
-		values: { userName: document.getElementById('userName').value }
-		   });
         })
         .catch(error => {
             console.error('Error:', error);
