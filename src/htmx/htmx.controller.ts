@@ -22,17 +22,17 @@ export class HtmxController {
   @Get('deployments')
   async getDeployments(@Query('userName') userName: string, @Res() res: Response) {
     try {
-      const deployments = await this.htmxService.getDeployments(userName.toLowerCase());
+      const deployments = await this.htmxService.getDeployments();
       if (!deployments || deployments.length === 0) {
         return res.send('<p>No deployments found</p>');
       }
       const deploymentsHTML = deployments
         .map((deployment) => `
           <div class="deployment-item">
-            <h3>${deployment.project_name}</h3>
+            <h3>${deployment.projectName}</h3>
             <p>Status: ${deployment.status}</p>
             <p>Deployed at: ${new Date(deployment.time).toLocaleString()}</p>
-            <p>Deployment ID: ${deployment.container_id}</p>
+            <p>Deployment ID: ${deployment.containerId}</p>
           </div>
         `)
         .join('');

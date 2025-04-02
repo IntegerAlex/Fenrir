@@ -9,11 +9,11 @@ export class AuthController {
 
   @Post('login')
   async login(@Req() req: Request, @Res() res: Response) {
-    const { githubUsername, passKey } = req.body;
-    const sessionId = await this.authService.login(githubUsername, passKey);
+    const { passKey } = req.body;
+    const sessionId = await this.authService.login(passKey);
     if (sessionId) {
       res.cookie('sessionId', sessionId, { httpOnly: true, secure: false });
-      return res.status(200).json({ message: 'Login successful', githubUsername });
+      return res.status(200).json({ message: 'Login successful' });
     }
     return res.status(401).json({ message: 'Unauthorized' });
   }

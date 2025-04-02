@@ -2,7 +2,6 @@
 import { Injectable } from '@nestjs/common';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import fetch from 'node-fetch';
 import * as fs from 'fs';
 
 const execAsync = promisify(exec);

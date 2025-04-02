@@ -28,7 +28,6 @@
 <body>
     <h1>Login</h1>
     <form id="loginForm">
-        <input type="text" id="githubUsername" placeholder="GitHub Username" required>
         <input type="password" id="passKey" placeholder="Enter Pass Key" required>
         <div id="errorMessage" class="error"></div>
         <button type="submit" id="loginButton">Login</button>
@@ -44,7 +43,6 @@
             loginButton.disabled = true;
             loginButton.textContent = 'Logging in...';
             
-            const githubUsername = document.getElementById('githubUsername').value;
             const passKey = document.getElementById('passKey').value;
             
             try {
@@ -53,7 +51,7 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ githubUsername, passKey }),
+                    body: JSON.stringify({ passKey }),
                     credentials: 'same-origin'
                 });
                 

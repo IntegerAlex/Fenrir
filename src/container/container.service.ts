@@ -17,9 +17,7 @@ export class ContainerService {
 
   async runContainer(body: any) {
     const { userName, projectName, repoLink, entryPoint, buildCommand, runCommand } = body;
-
-    await this.deploymentService.trackDeployment(userName);
-
+    
     const imageName = `${userName.toLowerCase()}-${projectName}`;
     const port = await this.getPort(8081);
 

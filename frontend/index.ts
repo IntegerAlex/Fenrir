@@ -8,7 +8,6 @@ document.getElementById('loginForm')?.addEventListener('submit', async (e: Event
     loginButton.disabled = true;
     loginButton.textContent = 'Logging in...';
 
-    const githubUsername = (document.getElementById('githubUsername') as HTMLInputElement).value;
     const passKey = (document.getElementById('passKey') as HTMLInputElement).value;
 
     try {
@@ -17,7 +16,7 @@ document.getElementById('loginForm')?.addEventListener('submit', async (e: Event
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ githubUsername, passKey }),
+            body: JSON.stringify({ passKey }),
             credentials: 'same-origin'
         });
 

@@ -15,9 +15,7 @@ import { HtmxModule } from './htmx/htmx.module';
     AuthModule,
     ContainerModule,
     DeploymentModule,
-    UserModule, // Import the UserModule here
     DatabaseModule,
-    RedisModule,
     SubdomainModule,
     HtmxModule,
   ],

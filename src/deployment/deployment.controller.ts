@@ -7,7 +7,7 @@ export class DeploymentController {
   constructor(private readonly deploymentService: DeploymentService) {}
 
   @Get()
-  async getDeployments(@Query('userName') userName: string) {
-    return this.deploymentService.getDeployments(userName);
+  async getDeployments() {
+    return this.deploymentService.getDeployments();
   }
 }

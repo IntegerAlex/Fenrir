@@ -3,7 +3,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DeploymentService } from './deployment.service';
 import { DeploymentController } from './deployment.controller';
-import { Deployment } from '../user/user.entity';
+import { Deployment } from './deployment.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Deployment])],

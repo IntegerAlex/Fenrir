@@ -6,7 +6,7 @@ import { RedisService } from '../redis/redis.service';
 @Injectable()
 export class HtmxService {
   constructor(
-    private readonly deploymentService: DeploymentService,
+    private readonly deploymentService: DeploymentService,      
     private readonly redisService: RedisService,
   ) {}
 
@@ -37,8 +37,8 @@ export class HtmxService {
     return response.json();
   }
 
-  async getDeployments(userName: string) {
-    return this.deploymentService.getDeployments(userName);
+  async getDeployments() {
+    return this.deploymentService.getDeployments();
   }
 
   async getSubscription(userName: string) {

@@ -1,13 +1,9 @@
-// src/user/user.entity.ts
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @Entity()
 export class Deployment {
   @PrimaryGeneratedColumn()
   id: number;
-
-  @Column()
-  userName: string;
 
   @Column()
   projectName: string;
@@ -20,4 +16,4 @@ export class Deployment {
 
   @Column()
   containerId: string;
-}
+} 
