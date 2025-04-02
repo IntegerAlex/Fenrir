@@ -2,9 +2,12 @@
 import { Module } from '@nestjs/common';
 import { ContainerService } from './container.service';
 import { ContainerController } from './container.controller';
+import { SubdomainService } from '../subdomain/subdomain.service';
+import { DeploymentModule } from '../deployment/deployment.module';
 
 @Module({
-  providers: [ContainerService],
+  imports: [DeploymentModule],
+  providers: [ContainerService, SubdomainService],
   controllers: [ContainerController],
 })
 export class ContainerModule {}

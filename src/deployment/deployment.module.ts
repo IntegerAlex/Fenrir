@@ -9,5 +9,6 @@ import { Deployment } from './deployment.entity';
   imports: [TypeOrmModule.forFeature([Deployment])],
   providers: [DeploymentService],
   controllers: [DeploymentController],
+  exports: [DeploymentService],
 })
 export class DeploymentModule {}
