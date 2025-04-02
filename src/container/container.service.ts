@@ -31,10 +31,29 @@ export class ContainerService {
   }
 
   private async createImage(userName: string, projectName: string, repoLink: string, entryPoint: string, buildCommand: string, runCommand: string) {
+    const linuxUser = process.env.LINUX_USER || 'root';
+    const userDirPath = `/home/${linuxUser}/${userName.toLowerCase()}`;
+    const projectDirPath = `${userDirPath}/${projectName}`;
+    
     createDirectory(userName);
-    process.chdir(`/home/${process.env.LINUX_USER}/${userName.toLowerCase()}`);
-    await execAsync(`git clone ${repoLink}`);
-    process.chdir(projectName);
-    await execAsync(`buildah build -t ${userName.toLowerCase()}-${projectName} .`);
+    
+    // Clone the repository without changing the process directory
+    await execAsync(`git clone ${repoLink} ${projectDirPath}`);
+    
+    // Create a Dockerfile using the provided parameters
+    const dockerfile = [
+      'FROM node:16',
+      `WORKDIR /app`,
+      'COPY . /app/',
+      `RUN ${buildCommand}`,
+      `EXPOSE 8080`,
+      `CMD ${runCommand} ${entryPoint}`
+    ].join('\n');
+    
+    // Write Dockerfile to the project directory
+    await execAsync(`echo '${dockerfile}' > ${projectDirPath}/Dockerfile`);
+    
+    // Build the image
+    await execAsync(`buildah build -t ${userName.toLowerCase()}-${projectName} ${projectDirPath}`);
   }
 }
