@@ -6,7 +6,6 @@ import { AuthModule } from './auth/auth.module';
 import { ContainerModule } from './container/container.module';
 import { DeploymentModule } from './deployment/deployment.module';
 import { DatabaseModule } from './db/database.module';
-import { RedisModule } from './redis/redis.module';
 import { SubdomainModule } from './subdomain/subdomain.module';
 import { HtmxModule } from './htmx/htmx.module';
 
@@ -20,7 +19,6 @@ import { HtmxModule } from './htmx/htmx.module';
     ContainerModule,
     DeploymentModule,
     DatabaseModule,
-    RedisModule,
     SubdomainModule,
     HtmxModule,
   ],

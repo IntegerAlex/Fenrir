@@ -7,7 +7,7 @@ import { AuthService } from './auth.service';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('/login')
+  @Post('login')
   async login(@Req() req: Request, @Res() res: Response) {
     const { passKey } = req.body;
     const sessionId = await this.authService.login(passKey);

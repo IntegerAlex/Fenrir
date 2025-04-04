@@ -7,12 +7,12 @@ import { ConfigService } from '@nestjs/config';
   imports: [
     TypeOrmModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get('PG_HOST', 'localhost'),
-        port: parseInt(configService.get('PG_PORT'), 10) || 5432,
-        username: configService.get('PG_USERNAME', 'postgres'),
-        password: configService.get('PG_PASSWORD', 'password'),
-        database: configService.get('PG_DATABASE', 'flexhost'),
+        type: 'postgres' as const, // Explicitly type as "postgres"
+        host: configService.get<string>('PG_HOST', 'localhost'),
+        port: configService.get<number>('PG_PORT', 5444),
+        username: configService.get<string>('PG_USERNAME', 'postgres'),
+        password: configService.get<string>('PG_PASSWORD', 'password'),
+        database: configService.get<string>('PG_DATABASE', 'flexhost'),
         entities: [Deployment],
         synchronize: true,
       }),

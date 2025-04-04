@@ -1,10 +1,9 @@
-// src/container/container.service.ts
 import { Injectable } from '@nestjs/common';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import { createDirectory , getPort } from '../utils/container.util';
 import { DeploymentService } from '../deployment/deployment.service';
 import { SubdomainService } from '../subdomain/subdomain.service';
+import { getPort, dockerFile, createDirectory } from '../utils/container.util';
+import { promisify } from 'util';
+import { exec } from 'child_process';
 
 const execAsync = promisify(exec);
 
@@ -16,44 +15,90 @@ export class ContainerService {
   ) {}
 
   async runContainer(body: any) {
-    const { userName, projectName, repoLink, entryPoint, buildCommand, runCommand } = body;
-    
-    const imageName = `${userName.toLowerCase()}-${projectName}`;
-    const port = await getPort(8081);
+    const {
+      userName,
+      projectName,
+      repoLink,
+      entryPoint,
+      buildCommand = 'npm install',
+      runCommand = 'node',
+    } = body;
 
-    await this.createImage(userName, projectName, repoLink, entryPoint, buildCommand, runCommand);
-    const { stdout } = await execAsync(`podman run -d -p ${port}:8080 -t localhost/${imageName}:latest`);
+    // Validate required fields
+    const missingFields: string[] = []; // Explicitly type as string[]
+    if (!userName) missingFields.push('userName');
+    if (!projectName) missingFields.push('projectName');
+    if (!repoLink) missingFields.push('repoLink');
+    if (!entryPoint) missingFields.push('entryPoint');
 
-    const containerId = stdout.trim();
-    await this.subdomainService.setupSubdomain(containerId.substring(0, 12), port, containerId);
+    if (missingFields.length > 0) {
+      throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+    }
 
-    return { containerId, imageName, status: 'deployed' };
+    try {
+      // Track deployment limit
+      await this.deploymentService.addDeployment(projectName, ''); // Use addDeployment instead of trackDeployment
+
+      // Create directory for user
+      createDirectory(userName);
+
+      // Generate Dockerfile and build image
+      const imageName = `${userName.toLowerCase()}-${projectName}`;
+      const port = await this.findAvailablePort();
+      await this.createImage(userName, projectName, repoLink, entryPoint, buildCommand, runCommand);
+
+      // Run container
+      const { stdout } = await execAsync(`podman run -d -p ${port}:8080 -t localhost/${imageName}:latest`);
+      const containerId = stdout.trim();
+
+      // Set up subdomain
+      const subdomain = containerId.substring(0, 12);
+      await this.subdomainService.setupSubdomain(subdomain, port, containerId);
+
+      return { containerId, imageName, status: 'deployed' };
+    } catch (error) {
+      console.error('Error deploying container:', error);
+      throw new Error('Deployment failed');
+    }
   }
 
-  private async createImage(userName: string, projectName: string, repoLink: string, entryPoint: string, buildCommand: string, runCommand: string) {
-    const linuxUser = process.env.LINUX_USER || 'root';
-    const userDirPath = `/home/${linuxUser}/${userName.toLowerCase()}`;
-    const projectDirPath = `${userDirPath}/${projectName}`;
-    
-    createDirectory(userName);
-    
-    // Clone the repository without changing the process directory
-    await execAsync(`git clone ${repoLink} ${projectDirPath}`);
-    
-    // Create a Dockerfile using the provided parameters
-    const dockerfile = [
-      'FROM node:16',
-      `WORKDIR /app`,
-      'COPY . /app/',
-      `RUN ${buildCommand}`,
-      `EXPOSE 8080`,
-      `CMD ${runCommand} ${entryPoint}`
-    ].join('\n');
-    
-    // Write Dockerfile to the project directory
-    await execAsync(`echo '${dockerfile}' > ${projectDirPath}/Dockerfile`);
-    
-    // Build the image
-    await execAsync(`buildah build -t ${userName.toLowerCase()}-${projectName} ${projectDirPath}`);
+  private async findAvailablePort(): Promise<number> {
+    // Use utility function to find an available port
+    return getPort(8081);
+  }
+
+  private async createImage(
+    userName: string,
+    projectName: string,
+    repoLink: string,
+    entryPoint: string,
+    buildCommand: string,
+    runCommand: string
+  ): Promise<void> {
+    try {
+      // Change directory to user folder
+      process.chdir(`/home/${process.env.LINUX_USER || 'root'}/${userName.toLowerCase()}`);
+
+      // Clone repository into project directory
+      await execAsync(`git clone ${repoLink}`);
+      process.chdir(projectName);
+
+      // Check if Dockerfile exists; create if not
+      try {
+        await execAsync('ls Dockerfile');
+        console.log('Dockerfile already exists, skipping creation.');
+      } catch {
+        const dockerfileContent = dockerFile(entryPoint, buildCommand, runCommand);
+        await execAsync(`echo '${dockerfileContent}' > Dockerfile`);
+        console.log('Dockerfile created.');
+      }
+
+      // Build Docker image
+      await execAsync(`buildah build -t ${userName.toLowerCase()}-${projectName} .`);
+      console.log('Docker image built successfully.');
+    } catch (error) {
+      console.error('Error creating Docker image:', error);
+      throw error;
+    }
   }
 }

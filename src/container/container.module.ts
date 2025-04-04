@@ -2,7 +2,7 @@
 import { Module } from '@nestjs/common';
 import { ContainerService } from './container.service';
 import { ContainerController } from './container.controller';
-import { SubdomainService } from '../subdomain/subdomain.service';
+import { SubdomainModule } from '../subdomain/subdomain.module';
 import { DeploymentModule } from '../deployment/deployment.module';
 
 @Module({
