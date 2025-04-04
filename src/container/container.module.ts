@@ -6,8 +6,8 @@ import { SubdomainService } from '../subdomain/subdomain.service';
 import { DeploymentModule } from '../deployment/deployment.module';
 
 @Module({
-  imports: [DeploymentModule],
-  providers: [ContainerService, SubdomainService],
+  imports: [DeploymentModule, SubdomainModule],
+  providers: [ContainerService],
   controllers: [ContainerController],
 })
 export class ContainerModule {}
