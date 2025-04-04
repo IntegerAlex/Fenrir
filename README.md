@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Flexr
 
 <p align="center">
@@ -219,5 +218,3 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
->>>>>>> 4728644 (update @1)
