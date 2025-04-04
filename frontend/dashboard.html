@@ -71,7 +71,7 @@
 
     <script>
 	    document.addEventListener("DOMContentLoaded", function() {
-    fetch('/v1/profile')
+    fetch('/htmx/v1/profile')
         .then(response => {
             if (!response.ok) {
                 throw new Error('Failed to fetch profile');
@@ -84,7 +84,7 @@
             document.getElementById('userName').value = nickname;
 
             // Fetch repositories
-            return fetch(`/v1/repositories?user_id=${nickname}`);
+            return fetch(`/htmx/v1/repositories?user_id=${nickname}`);
         })
         .then(response => response.json())
         .then(data => {
