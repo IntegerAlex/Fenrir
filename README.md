@@ -119,4 +119,3 @@ This program is free software: you can redistribute it and/or modify it under th
 
 ---
 Made with ❤️ by Akshat Kotpalliwar (alias IntegerAlex on GitHub)
-```
