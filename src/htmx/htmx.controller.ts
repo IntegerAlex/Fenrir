@@ -75,7 +75,7 @@ export class HtmxController {
   }
   @Get('v1/repositories')
   async getRepositories(@Res() res: Response) {
-	 fetch(`https://api.github.com/${this.nickname}/repos`, {
+	 fetch(`https://api.github.com/users/${this.nickname}/repos`, {
 		method: 'GET'})
 	.then((response) => response.json())
     	.then((data: any) => {
