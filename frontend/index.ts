@@ -11,7 +11,7 @@ document.getElementById('loginForm')?.addEventListener('submit', async (e: Event
     const passKey = (document.getElementById('passKey') as HTMLInputElement).value;
 
     try {
-        const response = await fetch('/login', {
+        const response = await fetch('/auth/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
