@@ -17,7 +17,9 @@ CMD ["${runCommand}", "${entryPoint}"]
 export async function getPort(findPort: number): Promise<number> {
   const server = net.createServer();
   return new Promise((resolve) => {
-    server.once('error', (err) => resolve(err.message === 'EADDRINUSE' ? getPort(findPort + 1) : findPort));
+    server.once('error', (err) =>
+      resolve(err.message === 'EADDRINUSE' ? getPort(findPort + 1) : findPort)
+    );
     server.once('listening', () => server.close(() => resolve(findPort)));
     server.listen(findPort);
   });

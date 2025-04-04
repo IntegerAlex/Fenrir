@@ -4,7 +4,10 @@ import { promisify } from 'util';
 
 const execAsync = promisify(exec);
 
-export async function addRecord(subdomain: string, dnsRecordId: string): Promise<string> {
+export async function addRecord(
+  subdomain: string,
+  dnsRecordId: string
+): Promise<string> {
   const zoneId = process.env.CLOUDFLARE_ZONE_ID;
   const url = `https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records`;
   const data = {
@@ -35,7 +38,11 @@ export async function addRecord(subdomain: string, dnsRecordId: string): Promise
   return 'DNS record updated';
 }
 
-export async function setupSubdomain(subdomain: string, port: number, dnsRecordId: string): Promise<string> {
+export async function setupSubdomain(
+  subdomain: string,
+  port: number,
+  dnsRecordId: string
+): Promise<string> {
   await addRecord(subdomain, dnsRecordId);
   await createNginxConfig(subdomain, port);
   await createNginxSymlink(subdomain);
@@ -44,7 +51,10 @@ export async function setupSubdomain(subdomain: string, port: number, dnsRecordI
   return 'Subdomain setup completed';
 }
 
-async function createNginxConfig(subdomain: string, port: number): Promise<void> {
+async function createNginxConfig(
+  subdomain: string,
+  port: number
+): Promise<void> {
   const config = `
 server {
     listen 443 ssl;
@@ -60,11 +70,15 @@ server {
     }
 }
   `;
-  fs.writeFileSync(`/etc/nginx/sites-available/${subdomain}`, config, { encoding: 'utf8' });
+  fs.writeFileSync(`/etc/nginx/sites-available/${subdomain}`, config, {
+    encoding: 'utf8',
+  });
 }
 
 async function createNginxSymlink(subdomain: string): Promise<void> {
-  await execAsync(`sudo ln -s /etc/nginx/sites-available/${subdomain} /etc/nginx/sites-enabled/`);
+  await execAsync(
+    `sudo ln -s /etc/nginx/sites-available/${subdomain} /etc/nginx/sites-enabled/`
+  );
 }
 
 async function getSSL(subdomain: string): Promise<void> {

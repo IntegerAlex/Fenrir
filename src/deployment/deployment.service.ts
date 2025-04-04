@@ -8,7 +8,7 @@ import { Deployment } from './deployment.entity';
 export class DeploymentService {
   constructor(
     @InjectRepository(Deployment)
-    private readonly deploymentRepository: Repository<Deployment>,
+    private readonly deploymentRepository: Repository<Deployment>
   ) {}
 
   async getDeployments() {

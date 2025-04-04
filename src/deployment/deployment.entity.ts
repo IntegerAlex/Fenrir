@@ -16,4 +16,4 @@ export class Deployment {
 
   @Column()
   containerId: string;
-} 
+}

@@ -4,11 +4,15 @@ import { DeploymentService } from '../deployment/deployment.service';
 
 @Injectable()
 export class HtmxService {
-  constructor(
-    private readonly deploymentService: DeploymentService,      
-  ) {}
+  constructor(private readonly deploymentService: DeploymentService) {}
 
-  async runContainer(userName: string, repoLink: string, entryPoint: string, buildCommand?: string, runCommand?: string) {
+  async runContainer(
+    userName: string,
+    repoLink: string,
+    entryPoint: string,
+    buildCommand?: string,
+    runCommand?: string
+  ) {
     const projectName = repoLink.split('/').pop()?.split('.')[0] || '';
     const response = await fetch('http://localhost:8080/v1/runContainer', {
       method: 'POST',
@@ -36,6 +40,6 @@ export class HtmxService {
   }
 
   async getSubscription(userName: string) {
-	  return true;
+    return true;
   }
 }

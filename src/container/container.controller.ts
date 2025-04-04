@@ -13,7 +13,9 @@ export class ContainerController {
       const result = await this.containerService.runContainer(body);
       res.json(result);
     } catch (error) {
-      res.status(500).json({ error: 'Deployment failed', message: error.message });
+      res
+        .status(500)
+        .json({ error: 'Deployment failed', message: error.message });
     }
   }
 }

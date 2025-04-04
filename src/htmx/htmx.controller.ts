@@ -1,5 +1,13 @@
 // src/htmx/htmx.controller.ts
-import { Controller, Post, Get, Query, Body, Res } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Query,
+  Body,
+  Res,
+  HttpStatus,
+} from '@nestjs/common';
 import { Response } from 'express';
 import { HtmxService } from './htmx.service';
 import { ConfigService } from '@nestjs/config';
@@ -8,91 +16,134 @@ import { ConfigService } from '@nestjs/config';
 export class HtmxController {
   public nickname: string;
   constructor(
-	  private readonly htmxService: HtmxService ,
-	  private readonly configService: ConfigService
-	 
+    private readonly htmxService: HtmxService,
+    private readonly configService: ConfigService
   ) {
-	  this.nickname = this.configService.get<string>('GH_USERNAME', 'IntegerAlex');
+    this.nickname = this.configService.get<string>(
+      'GH_USERNAME',
+      'IntegerAlex'
+    );
   }
+
   @Post()
   async runContainer(@Body() body: any, @Res() res: Response) {
     const { userName, buildCommand, runCommand, repoLink, entryPoint } = body;
     try {
-      const result = await this.htmxService.runContainer(userName, repoLink, entryPoint, buildCommand, runCommand);
-      res.send(`<p>Container ID: ${result.containerId}</p>`);
+      const result = await this.htmxService.runContainer(
+        userName,
+        repoLink,
+        entryPoint,
+        buildCommand,
+        runCommand
+      );
+      res.status(HttpStatus.OK).json({
+        success: true,
+        data: { containerId: result.containerId },
+      });
     } catch (error) {
       console.error('Error:', error);
-      res.send('<p>Error deploying container</p>');
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        error: 'Error deploying container',
+      });
     }
   }
 
   @Get('deployments')
-  async getDeployments(@Query('userName') userName: string, @Res() res: Response) {
+  async getDeployments(
+    @Query('userName') userName: string,
+    @Res() res: Response
+  ) {
     try {
       const deployments = await this.htmxService.getDeployments();
       if (!deployments || deployments.length === 0) {
-        return res.send('<p>No deployments found</p>');
+        return res.status(HttpStatus.OK).json({
+          success: true,
+          message: 'No deployments found',
+        });
       }
-      const deploymentsHTML = deployments
-        .map((deployment) => `
-          <div class="deployment-item">
-            <h3>${deployment.projectName}</h3>
-            <p>Status: ${deployment.status}</p>
-            <p>Deployed at: ${new Date(deployment.time).toLocaleString()}</p>
-            <p>Deployment ID: ${deployment.containerId}</p>
-          </div>
-        `)
-        .join('');
-      res.send(`
-        <div class="deployments-container">
-          ${deploymentsHTML}
-        </div>
-      `);
+      const formattedDeployments = deployments.map((deployment) => ({
+        projectName: deployment.projectName,
+        status: deployment.status,
+        deployedAt: new Date(deployment.time).toLocaleString(),
+        containerId: deployment.containerId,
+      }));
+      res.status(HttpStatus.OK).json({
+        success: true,
+        data: formattedDeployments,
+      });
     } catch (error) {
       console.error('Error fetching deployments:', error);
-      res.send('<p>Error fetching deployments</p>');
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        error: 'Error fetching deployments',
+      });
     }
   }
 
   @Get('subscription')
-  async getSubscription(@Query('userName') userName: string, @Res() res: Response) {
+  async getSubscription(
+    @Query('userName') userName: string,
+    @Res() res: Response
+  ) {
     try {
-      const subscription = await this.htmxService.getSubscription(userName.toLowerCase());
-      if (subscription) {
-        res.send(`<p>You are in free tier</p><p>Upgrade to premium to get more deployments</p>`);
-      } else {
-        res.send(`<p>You are in free tier</p><p>You can deploy one application</p>`);
-      }
+      const subscription = await this.htmxService.getSubscription(
+        userName.toLowerCase()
+      );
+      const message = subscription
+        ? 'You are in free tier'
+        : 'You can deploy one application';
+      res.status(HttpStatus.OK).json({
+        success: true,
+        data: {
+          tier: 'free',
+          message,
+          upgrade: subscription ? 'Upgrade to premium' : null,
+        },
+      });
     } catch (error) {
       console.error('Error fetching subscription:', error);
-      res.send('<p>Error fetching subscription</p>');
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        error: 'Error fetching subscription',
+      });
     }
   }
 
   @Get('v1/profile')
   async getProfile(@Res() res: Response) {
-	return res.json({nickname: this.nickname});
+    res.status(HttpStatus.OK).json({
+      success: true,
+      data: { nickname: this.nickname },
+    });
   }
+
   @Get('v1/repositories')
   async getRepositories(@Res() res: Response) {
-	 fetch(`https://api.github.com/users/${this.nickname}/repos`, {
-		method: 'GET'})
-	.then((response) => response.json())
-    	.then((data: any) => {
-   	   const repositories = data.map(
-       		 (repo: { name: string; html_url: string }) => ({
-          	name: repo.name,
-          	url: repo.html_url,
-        	})
-      	);
-      	res.send({
-        repositories: repositories,
-        avatar_url: data[0]?.owner?.avatar_url,
+    try {
+      const response = await fetch(
+        `https://api.github.com/users/${this.nickname}/repos`,
+        { method: 'GET' }
+      );
+      const data = await response.json();
+      const repositories = data.map((repo: any) => ({
+        name: repo.name,
+        url: repo.html_url,
+      }));
+      const avatarUrl = data[0]?.owner?.avatar_url;
+      res.status(HttpStatus.OK).json({
+        success: true,
+        data: {
+          repositories,
+          avatarUrl,
+        },
       });
-    })
-    .catch((error) => {
+    } catch (error) {
       console.error('Error fetching repositories:', error);
-      res.status(500).send('Error fetching repositories');
-    });
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        error: 'Error fetching repositories',
+      });
+    }
   }
 }

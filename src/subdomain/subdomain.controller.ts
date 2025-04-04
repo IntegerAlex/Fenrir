@@ -11,10 +11,16 @@ export class SubdomainController {
   async setupSubdomain(@Body() body: any, @Res() res: Response) {
     const { subdomain, port, dnsRecordId } = body;
     try {
-      const result = await this.subdomainService.setupSubdomain(subdomain, port, dnsRecordId);
+      const result = await this.subdomainService.setupSubdomain(
+        subdomain,
+        port,
+        dnsRecordId
+      );
       res.json({ message: result });
     } catch (error) {
-      res.status(500).json({ error: 'Subdomain setup failed', message: error.message });
+      res
+        .status(500)
+        .json({ error: 'Subdomain setup failed', message: error.message });
     }
   }
 }

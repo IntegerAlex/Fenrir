@@ -11,7 +11,7 @@ const execAsync = promisify(exec);
 export class ContainerService {
   constructor(
     private readonly deploymentService: DeploymentService,
-    private readonly subdomainService: SubdomainService,
+    private readonly subdomainService: SubdomainService
   ) {}
 
   async runContainer(body: any) {
@@ -45,10 +45,19 @@ export class ContainerService {
       // Generate Dockerfile and build image
       const imageName = `${userName.toLowerCase()}-${projectName}`;
       const port = await this.findAvailablePort();
-      await this.createImage(userName, projectName, repoLink, entryPoint, buildCommand, runCommand);
+      await this.createImage(
+        userName,
+        projectName,
+        repoLink,
+        entryPoint,
+        buildCommand,
+        runCommand
+      );
 
       // Run container
-      const { stdout } = await execAsync(`podman run -d -p ${port}:8080 -t localhost/${imageName}:latest`);
+      const { stdout } = await execAsync(
+        `podman run -d -p ${port}:8080 -t localhost/${imageName}:latest`
+      );
       const containerId = stdout.trim();
 
       // Set up subdomain
@@ -77,7 +86,9 @@ export class ContainerService {
   ): Promise<void> {
     try {
       // Change directory to user folder
-      process.chdir(`/home/${process.env.LINUX_USER || 'root'}/${userName.toLowerCase()}`);
+      process.chdir(
+        `/home/${process.env.LINUX_USER || 'root'}/${userName.toLowerCase()}`
+      );
 
       // Clone repository into project directory
       await execAsync(`git clone ${repoLink}`);
@@ -88,13 +99,19 @@ export class ContainerService {
         await execAsync('ls Dockerfile');
         console.log('Dockerfile already exists, skipping creation.');
       } catch {
-        const dockerfileContent = dockerFile(entryPoint, buildCommand, runCommand);
+        const dockerfileContent = dockerFile(
+          entryPoint,
+          buildCommand,
+          runCommand
+        );
         await execAsync(`echo '${dockerfileContent}' > Dockerfile`);
         console.log('Dockerfile created.');
       }
 
       // Build Docker image
-      await execAsync(`buildah build -t ${userName.toLowerCase()}-${projectName} .`);
+      await execAsync(
+        `buildah build -t ${userName.toLowerCase()}-${projectName} .`
+      );
       console.log('Docker image built successfully.');
     } catch (error) {
       console.error('Error creating Docker image:', error);
